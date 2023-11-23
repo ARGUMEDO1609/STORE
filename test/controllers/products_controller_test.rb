@@ -24,7 +24,7 @@ class ProductsControllerTest < ActionDispatch::IntegrationTest
      assert_select 'form'
   end
 
-  test 'allow to create a new product' do 
+  test ' allows to create a new product ' do 
     post products_path, params: {
       product: {
         title: 'sandalia nike',
@@ -33,6 +33,26 @@ class ProductsControllerTest < ActionDispatch::IntegrationTest
       }
     }
 
-    assert_redirected_to products_path
+    assert_response :redirected_to products_path 
+    assert_equal flash[:notice], 'tu producto se ha creado correctamente'
   end
+
+  test 'does nt allow to create a new product with empty fields ' do 
+    post products_path, params: {
+      product: {
+        title: 'botas nike',
+        description: 'usada',
+        price: 84
+      }
+    }
+
+    assert_response :unprocessable_entity
+  end
+
+  test 'render an edit product form' do
+    get edit_product_path(products(:tenis))
+
+    assert_response :success
+    assert_select 'form'
+ end
 end    
