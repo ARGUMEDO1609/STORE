@@ -55,4 +55,32 @@ class ProductsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select 'form'
  end
+
+ test ' allows to update a product ' do 
+  patch product_path(product(:tenis)), params: {
+    product: {
+      price: 165
+    }
+  }
+
+  assert_response :redirected_to products_path 
+  assert_equal flash[:notice], 'tu producto se ha actualizado correctamente'
+  end
+
+  test 'does not allow to update a product with an invalid field' do 
+    patch product_path(product(:tenis)), params: {
+      product: {
+        price: nil
+      }
+    }
+  
+   assert_response :unprocessable_entity
+    end
+
+test 'can delete products' do 
+   assert_difference('Product') do
+     
+   end
+     delete product_path(products(:tenis))
+  end
 end    
