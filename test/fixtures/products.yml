@@ -4,8 +4,10 @@ tenis:
   title: jordan
   description: nuevos
   price: 250
+  category: footwear
 
 camiseta:
   title: lv
   description: nueva
   price: 50
+  category: clothes

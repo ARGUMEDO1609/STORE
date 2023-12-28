@@ -1,8 +1,17 @@
 class ProductsController < ApplicationController
   before_action :set_product, only: [:show, :edit, :update, :destroy]
-
   def index
-    @products = Product.all.with_attached_photo
+    @categories = Category.order(name: :asc)
+    @products = Product.with_attached_photo.order(created_at: :desc).load_async
+    if params[:category_id]
+    @products = @products.where(category_id: params[:category_id])
+    end
+    if params[:min_price].present?
+      @products = @products.where("price >= ?", params[:min_price])
+    end
+    if params[:max_price].present?
+      @products = @products.where("price <= ?", params[:max_price])
+    end
   end
 
   def show
@@ -41,7 +50,7 @@ class ProductsController < ApplicationController
   private
 
   def product_params
-    params.require(:product).permit(:title, :description, :price, :photo)
+    params.require(:product).permit(:title, :description, :price, :photo, :category_id)
   end
 
   def set_product

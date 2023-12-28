@@ -5,39 +5,49 @@ class ProductsControllerTest < ActionDispatch::IntegrationTest
     get products_path
 
     assert_response :success
-    assert_select '.product', 2
-  end 
+    assert_select '.product', 4
+    assert_select '.category', 4
+  end
 
-  test 'render a detailed product page' do 
+  test 'render a list of products filtered by category' do
+    get products_path(category_id: categories(:footwear).id)
+
+    assert_response :success
+    assert_select '.product', 1
+ 
+  end
+
+  test 'render a detailed product page' do
     get product_path(products(:tenis))
 
     assert_response :success
     assert_select '.title', 'jordan'
     assert_select '.description', 'nuevos'
-    assert_select 'price', '250$'
+    assert_select '.price', '250$'
   end
 
-      test 'render a new product form' do
-     get new_product_path
+  test 'render a new product form' do
+    get new_product_path
 
-     assert_response :success
-     assert_select 'form'
+    assert_response :success
+    assert_select 'form'
   end
 
-  test ' allows to create a new product ' do 
+  test 'allows to create a new product' do
     post products_path, params: {
       product: {
         title: 'sandalia nike',
         description: 'usada',
-        price: 84
+        price: 84,
+        category_id: categories(:clothes).id
       }
     }
 
-    assert_response :redirected_to products_path 
-    assert_equal flash[:notice], 'tu producto se ha creado correctamente'
+    assert_redirected_to products_path
+    assert_equal 'tu producto se ha creado correctamente', flash[:notice]
   end
 
-  test 'does nt allow to create a new product with empty fields ' do 
+  test 'does not allow to create a new product with empty fields' do
     post products_path, params: {
       product: {
         title: 'botas nike',
@@ -54,35 +64,36 @@ class ProductsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'form'
- end
-
- test ' allows to update a product ' do 
-  patch product_path(product(:tenis)), params: {
-    product: {
-      price: 165
-    }
-  }
-
-  assert_response :redirected_to products_path 
-  assert_equal flash[:notice], 'tu producto se ha actualizado correctamente'
   end
 
-  test 'does not allow to update a product with an invalid field' do 
-    patch product_path(product(:tenis)), params: {
+  test 'allows to update a product' do
+    patch product_path(products(:tenis)), params: {
+      product: {
+        price: 165
+      }
+    }
+
+    assert_redirected_to products_path
+    assert_equal 'tu producto se ha actualizado correctamente', flash[:notice]
+  end
+
+  test 'does not allow to update a product with an invalid field' do
+    patch product_path(products(:tenis)), params: {
       product: {
         price: nil
       }
     }
-  
-   assert_response :unprocessable_entity
+
+    assert_response :unprocessable_entity
+  end
+
+  test 'can delete products' do
+    assert_difference('Product.count', -1) do
+      delete product_path(products(:tenis))
     end
 
-test 'can delete products' do 
-   assert_difference('Product.count', -1) do
-    delete product_path(products(:tenis))  
-   end
-    
-   assert_redirected_to products_path
-   assert_equal flash[:notice], 'Tu producto se ha eliminado correctamente'
+    assert_redirected_to products_path
+    assert_equal 'Tu producto se ha eliminado correctamente', flash[:notice]
   end
-end    
+end
+ 
