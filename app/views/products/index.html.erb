@@ -1,16 +1,19 @@
-<%= turbo_frame_tag 'categories' do %>
+<%= turbo_frame_tag 'home' do %>
   <h1>Products:</h1>
 
   <%= form_with url: products_path, method: :get do |form| %>
   <%= form.text_field :query_text, placeholder: 'What do you want to search?', onChange: 'this.form.requestSubmit()', value: params[:query_text] %> 
-     <%= form.number_field :min_price, placeholder: 'min price', onChange: 'this.form.requestSubmit()', value: params[:min_price] %>
-     <%= form.number_field :max_price, placeholder: 'max price', onChange: 'this.form.requestSubmit()', value: params[:max_price] %> 
-     <%= form.select :order_by, options_for_select([["Recientes", "newest"], ["Mas caros", "expensive"], ["Mas baratos", "cheapest"]], params[:order_by]), {}, { onChange: 'this.form.requestSubmit()' } %>
+     <%= form.number_field :min_price, placeholder: 'Min price', onChange: 'this.form.requestSubmit()', value: params[:min_price] %>
+     <%= form.number_field :max_price, placeholder: 'Max price', onChange: 'this.form.requestSubmit()', value: params[:max_price] %> 
+     <%= form.select :order_by, options_for_select(Product::ORDER_BY.keys.map { |order| ["#{order}", order] }, params[:order_by]), {}, { onChange: 'this.form.requestSubmit()' } %>
   <% end %>
 
 <%= link_to 'all', products_path %>
 
 <%= render partial: 'category', collection: @categories %>
 
-<%= render partial: 'product', collection: @products %>
+<%= turbo_frame_tag "products-#{@pagy.page}", class: 'products' do %> 
+<%= render partial: 'product', collection: @products %> 
+<%= turbo_frame_tag "products-#{@pagy.next}", class: 'products', src: pagy_url_for(@pagy, @pagy.next), loading: :lazy if @pagy.next  %>
+  <% end %>
 <% end %>

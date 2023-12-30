@@ -1,29 +1,9 @@
 class ProductsController < ApplicationController
   before_action :set_product, only: [:show, :edit, :update, :destroy]
   def index
-    @categories = Category.order(name: :asc)
-    @products = Product.with_attached_photo.load_async
-    if params[:category_id]
-    @products = @products.where(category_id: params[:category_id])
-    end
-    if params[:min_price].present?
-      @products = @products.where("price >= ?", params[:min_price])
-    end
-    if params[:max_price].present?
-      @products = @products.where("price <= ?", params[:max_price])
-    end
-    if params[:query_text].present?
-      @products = @products.search_full_text(params[:query_text])
-    end
-    
-    if params[:order_by].present?
-       order_by = {
-        newest: "created_at DESC",
-        expencive: "price DESC",
-        cheapest: "price ASC",
-    }.fetch(params[:order_by].to_sym, "created_at DESC")
-    @products = @products.order(order_by)
-    end
+    @categories = Category.order(name: :asc).load_async
+
+    @pagy, @products = pagy_countless(FindProducts.new.call(product_params_index).load_async, items: 12)
   end
 
   def show
@@ -63,6 +43,10 @@ class ProductsController < ApplicationController
 
   def product_params
     params.require(:product).permit(:title, :description, :price, :photo, :category_id)
+  end
+
+  def product_params_index
+  params.permit(:category_id, :min_price, :max_price, :query_text, :order_by)
   end
 
   def set_product
